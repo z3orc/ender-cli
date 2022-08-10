@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 
@@ -43,10 +44,10 @@ func init() {
 }
 
 func setup(){
-	// dir_res := create_directories()
-	// if dir_res != 0 {
-	// 	log.Fatal("Could not create directories")
-	// }
+	dir_res := create_directories()
+	if dir_res != 0 {
+		log.Fatal("Could not create directories")
+	}
 
 	// dl_res  := download_file(global.JAR_PATH, "http://dynamic.z3orc.com/paper/1.19")
 	// if dl_res != nil {
