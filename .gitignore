@@ -3,3 +3,4 @@
 /.vscode
 /bin
 /config
+.DS_Store
