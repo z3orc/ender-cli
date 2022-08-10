@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
+	"github.com/z3orc/ender-cli/global"
 )
 
 // monitorCmd represents the monitor command
@@ -52,16 +53,16 @@ func monitor(){
         log.Fatal(err)
     }
 
-	addr2, err := net.ResolveUnixAddr("unix", SockAddr)
+	addr, err := net.ResolveUnixAddr("unix", SockAddr)
 	check(err, "ResolveUnixAddr")
 
-	conn, err := net.ListenUnix("unix", addr2)
+	conn, err := net.ListenUnix("unix", addr)
 	check(err, "ListenUnix")
 
 	fmt.Println("listening on:", conn.Addr())
 
-	server := exec.Command("java", "-jar", "./server.jar", "nogui")
-	server.Dir = "./data"
+	server := exec.Command("java", "-jar", "." + global.JAR_PATH, "nogui")
+	server.Dir = global.DATA_DIR
 	stdout, _ := server.StdoutPipe()
 	stdin, _ := server.StdinPipe()
 
