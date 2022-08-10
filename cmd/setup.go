@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 
+	"github.com/erikgeiser/promptkit/selection"
+	"github.com/erikgeiser/promptkit/textinput"
 	"github.com/spf13/cobra"
 	"github.com/z3orc/ender-cli/global"
 )
@@ -40,15 +43,74 @@ func init() {
 }
 
 func setup(){
-	dir_res := create_directories()
-	if dir_res != 0 {
-		log.Fatal("Could not create directories")
+	// dir_res := create_directories()
+	// if dir_res != 0 {
+	// 	log.Fatal("Could not create directories")
+	// }
+
+	// dl_res  := download_file(global.JAR_PATH, "http://dynamic.z3orc.com/paper/1.19")
+	// if dl_res != nil {
+	// 	log.Fatal("Could not download jar file")
+	// }
+
+	sp := selection.New("Which server flavour?",
+	selection.Choices([]string{"Vanilla", "Paper", "Purpur"}))
+	sp.PageSize = 3
+
+	choice, err := sp.RunPrompt()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+
+		os.Exit(1)
 	}
 
-	dl_res  := download_file(global.JAR_PATH, "http://dynamic.z3orc.com/paper/1.19")
-	if dl_res != nil {
-		log.Fatal("Could not download jar file")
+	// do something with the final choice
+	_ = choice
+
+
+	input := textinput.New("Which minecraft version?")
+	input.InitialValue = "1.19"
+	input.Placeholder = "Version cannot be empty"
+
+	name, err := input.RunPrompt()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+
+		os.Exit(1)
 	}
+
+	// do something with the result
+	_ = name
+
+
+	input = textinput.New("How much ram should the server use (in Mb, do not include the unit)")
+	input.InitialValue = "2000"
+	input.Placeholder = "Ram cannot be empty"
+
+	name, err = input.RunPrompt()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+
+		os.Exit(1)
+	}
+
+	// do something with the result
+	_ = name
+
+
+	input = textinput.New("Enter the maximum player limit")
+	input.InitialValue = "12"
+	input.Placeholder = "Player limit cannot be empty"
+
+	name, err = input.RunPrompt()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+
+		os.Exit(1)
+	}
+
+	// do something with the result
+	_ = name
 }
 
 func create_directories() int{
@@ -72,6 +134,12 @@ func download_file(filepath string, url string) error {
 	if err != nil {
 		return err
 	}
+
+	status := resp.StatusCode
+	if status != 200 {
+		return errors.New("could not download jar file")
+	}
+
 	defer resp.Body.Close()
 
 	// Create the file
