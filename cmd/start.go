@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/spf13/cobra"
 )
@@ -46,6 +47,14 @@ func start(){
 		fmt.Println("Error: ", err)
 	}
 
-	monitor := exec.Command(executable, "monitor")
-	monitor.Start()
+	if runtime.GOOS == "windows" {
+		monitor := exec.Command(executable, "monitor")
+		monitor.Stdout = os.Stdout
+		monitor.Stdin = os.Stdin
+		monitor.Stderr = os.Stderr
+		monitor.Run()
+	} else {
+		monitor := exec.Command(executable, "monitor")
+		monitor.Start()
+	}
 }
