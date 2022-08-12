@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
+	"github.com/z3orc/ender-cli/config"
 	"github.com/z3orc/ender-cli/global"
 )
 
@@ -61,7 +62,10 @@ func monitor(){
 
 	fmt.Println("listening on:", conn.Addr())
 
-	server := exec.Command("java", "-jar", "." + global.JAR_PATH, "nogui")
+	ram := config.Get(global.CONFIG_ENDER_PATH, "ram")
+	fmt.Println(ram)
+
+	server := exec.Command("java","-Xmx" + ram + "M", "-Xms" + ram + "M", "-jar", "." + global.JAR_PATH, "nogui")
 	server.Dir = global.DATA_DIR
 	stdout, _ := server.StdoutPipe()
 	stdin, _ := server.StdinPipe()
