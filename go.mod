@@ -6,13 +6,16 @@ require github.com/spf13/cobra v1.5.0
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
+	github.com/briandowns/spinner v1.19.0 // indirect
 	github.com/charmbracelet/bubbles v0.11.0 // indirect
 	github.com/charmbracelet/bubbletea v0.21.0 // indirect
 	github.com/charmbracelet/lipgloss v0.5.0 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/erikgeiser/promptkit v0.7.0 // indirect
+	github.com/fatih/color v1.7.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/muesli/ansi v0.0.0-20211031195517-c9f0611b6c70 // indirect
