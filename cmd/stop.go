@@ -5,8 +5,13 @@ package cmd
 
 import (
 	"net"
+	"os"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
+	"github.com/z3orc/ender-cli/global"
+	"github.com/z3orc/ender-cli/util"
 )
 
 // stopCmd represents the stop command
@@ -41,10 +46,29 @@ func init() {
 func stop(){
 	const SockAddr = "./data/ipc.sock"
 
+	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	s.Suffix = " Stopping server"
+	s.FinalMSG = "⛔ Server stopped \n"
+	s.Start()
+
 	addr, _ := net.ResolveUnixAddr("unix", SockAddr)
 	conn, err := net.DialUnix("unix", nil, addr)
 	check(err, "DialUnix")
 
 	conn.Write([]byte("stop\n"))
 	conn.Close()
+
+	for {
+		if util.IsOpened("127.0.0.1", 25565){
+			break
+		}
+	}
+
+	for {
+		if _, err := os.Stat(global.DATA_DIR + "/ipc.sock"); err == nil {
+			break
+		 }
+	}
+
+	s.Stop()
 }

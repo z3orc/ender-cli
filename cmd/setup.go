@@ -1,20 +1,20 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/erikgeiser/promptkit/confirmation"
 	"github.com/erikgeiser/promptkit/selection"
 	"github.com/erikgeiser/promptkit/textinput"
 	"github.com/spf13/cobra"
 	"github.com/z3orc/ender-cli/config"
 	"github.com/z3orc/ender-cli/global"
+	"github.com/z3orc/ender-cli/util"
 )
 
 // setupCmd represents the setup command
@@ -202,9 +202,24 @@ func setup(){
 		os.Exit(1)
 	}
 
+	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	s.Suffix = " Setting up your server"
+	s.FinalMSG = "✅ Server set up! \n"
+	spinnerErrorMsg := "Could not set up server! \n"
+	s.Start()
+	time.Sleep(1 * time.Second)
+
 	// do something with the result
 	if eula {
 		new_config["eula"] = "true"
+
+		err = os.WriteFile(global.DATA_DIR + "/eula.txt", []byte("eula=true"), 0644)
+		if err != nil {
+			s.FinalMSG = spinnerErrorMsg
+			s.Stop()
+			log.Fatal(err)
+		}
+
 	} else {
 		new_config["eula"] = "false"
 	}
@@ -212,14 +227,20 @@ func setup(){
 	// err = config.Create(global.CONFIG_ENDER_PATH, config)
 	err = config.Create(global.CONFIG_ENDER_PATH, new_config)
 	if err != nil {
+		s.FinalMSG = spinnerErrorMsg
+		s.Stop()
 		log.Fatal(err)
 	}
 
 	download_url := fmt.Sprint("http://dynamic.z3orc.com/", new_config["flavour"], "/", new_config["version"])
-	err = download_file(global.JAR_PATH, download_url)
+	err = util.DownloadFile(global.JAR_PATH, download_url)
 	if err != nil {
+		s.FinalMSG = spinnerErrorMsg
+		s.Stop()
 		log.Fatal(err)
 	}
+
+	s.Stop()
 }
 
 func create_directories() int{
@@ -234,32 +255,4 @@ func create_directories() int{
 	}
 	return 0
 
-}
-
-func download_file(filepath string, url string) error {
-
-	// Get the data
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-
-	status := resp.StatusCode
-	fmt.Println(status)
-	if !(status == 200 || status == 302) {
-		return errors.New("could not download jar file")
-	}
-
-	defer resp.Body.Close()
-
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
-	return err
 }

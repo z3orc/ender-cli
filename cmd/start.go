@@ -8,8 +8,11 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
+	"github.com/z3orc/ender-cli/util"
 )
 
 // startCmd represents the start command
@@ -47,6 +50,11 @@ func start(){
 		fmt.Println("Error: ", err)
 	}
 
+	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	s.Suffix = " Starting server"
+	s.FinalMSG = "🚀 Server started \n"
+	s.Start()
+
 	if runtime.GOOS == "windows" {
 		monitor := exec.Command(executable, "monitor")
 		monitor.Stdout = os.Stdout
@@ -57,4 +65,12 @@ func start(){
 		monitor := exec.Command(executable, "monitor")
 		monitor.Start()
 	}
+
+	for {
+		if util.IsOpened("127.0.0.1", 25565){
+			break
+		}
+	}
+
+	s.Stop()
 }
