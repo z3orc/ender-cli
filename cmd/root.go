@@ -11,6 +11,7 @@ var rootCmd = &cobra.Command{
 	Use:   "ender-cli",
 	Short: "A cli application to setup and manage a Minecraft-server",
 	Long: `A cli application to setup and manage a Minecraft-server`,
+	Version: "0.2.0",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
