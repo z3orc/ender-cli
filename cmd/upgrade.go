@@ -23,13 +23,13 @@ import (
 // upgradeCmd represents the upgrade command
 var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Upgrades the server to a newer version of Minecraft",
+// 	Long: `A longer description that spans multiple lines and likely contains examples
+// and usage of using your command. For example:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+// Cobra is a CLI library for Go that empowers applications.
+// This application is a tool to generate the needed files
+// to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		upgrade()
 	},
@@ -55,7 +55,7 @@ func upgrade(){
 	choices := possible_versions(current_version, flavour, false)
 
 	if len(choices) == 0 {
-		fmt.Println("🚀 You are already on the latest version!")
+		fmt.Println("🚀  You are already on the latest version!")
 		os.Exit(0)
 	}
 
@@ -104,10 +104,9 @@ func possible_versions(current_version string, flavour string, snapshot bool) []
 
 		for _, version := range versions {
 			if version.Type != "snapshot" {
+				possible_versions = append(possible_versions, version.Id)
 				if version.Id == current_version {
 					break
-				} else {
-					possible_versions = append(possible_versions, version.Id)
 				}
 			}
 		}
@@ -118,10 +117,9 @@ func possible_versions(current_version string, flavour string, snapshot bool) []
 		}
 
 		for index := range versions {
+			possible_versions = append(possible_versions, versions[index])
 			if versions[index] == current_version {
 				break
-			} else {
-				possible_versions = append(possible_versions, versions[index])
 			}
 		}
 	} else if flavour == "purpur" {
@@ -131,10 +129,9 @@ func possible_versions(current_version string, flavour string, snapshot bool) []
 		}
 
 		for index := range versions {
+			possible_versions = append(possible_versions, versions[index])
 			if versions[index] == current_version {
 				break
-			} else {
-				possible_versions = append(possible_versions, versions[index])
 			}
 		}
 	}
