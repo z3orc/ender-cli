@@ -47,8 +47,8 @@ func stop(){
 	const SockAddr = "./data/ipc.sock"
 
 	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
-	s.Suffix = " Stopping server"
-	s.FinalMSG = "⛔ Server stopped \n"
+	s.Suffix = " Stopping server \n"
+	s.FinalMSG = "⛔  Server stopped \n"
 	s.Start()
 
 	addr, _ := net.ResolveUnixAddr("unix", SockAddr)

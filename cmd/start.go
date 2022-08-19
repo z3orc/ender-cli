@@ -51,8 +51,8 @@ func start(){
 	}
 
 	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
-	s.Suffix = " Starting server"
-	s.FinalMSG = "🚀 Server started \n"
+	s.Suffix = " Starting server \n"
+	s.FinalMSG = "🚀  Server started \n"
 	s.Start()
 
 	if runtime.GOOS == "windows" {

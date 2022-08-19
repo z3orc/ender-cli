@@ -71,8 +71,8 @@ func upgrade(){
 	}
 
 	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
-	s.Suffix = " Upgrading server"
-	s.FinalMSG = "✅ Server upgraded!"
+	s.Suffix = " Upgrading server \n"
+	s.FinalMSG = "✅  Server upgraded! \n"
 	spinnerErrorMsg := "Could not upgrade server! \n"
 	s.Start()
 	time.Sleep(1 * time.Second)
