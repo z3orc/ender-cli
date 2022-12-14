@@ -13,6 +13,8 @@ import (
 	"github.com/erikgeiser/promptkit/textinput"
 	"github.com/spf13/cobra"
 	"github.com/z3orc/ender-cli/config"
+	"github.com/z3orc/ender-cli/endpoints/paper"
+	"github.com/z3orc/ender-cli/endpoints/purpur"
 	"github.com/z3orc/ender-cli/global"
 	"github.com/z3orc/ender-cli/util"
 )
@@ -50,7 +52,7 @@ func setup(){
 
 	new_config := make(map[string]string)
 
-	dir_res := create_directories()
+	dir_res := createDirectories()
 	if dir_res != 0 {
 		log.Fatal("Could not create directories")
 	}
@@ -224,6 +226,12 @@ func setup(){
 		new_config["eula"] = "false"
 	}
 
+	if new_config["flavour"] == "paper" {
+		new_config["build"] = paper.GetLatestBuild(new_config["version"])
+	} else if new_config["flavour"] == "purpur" {
+		new_config["build"] = purpur.GetLatestBuild(new_config["version"])
+	}
+
 	// err = config.Create(global.CONFIG_ENDER_PATH, config)
 	err = config.Create(global.CONFIG_ENDER_PATH, new_config)
 	if err != nil {
@@ -243,7 +251,7 @@ func setup(){
 	s.Stop()
 }
 
-func create_directories() int{
+func createDirectories() int{
 
 	dirs := [4]string{global.BACKUP_DIR, global.BIN_DIR, global.CONFIG_DIR, global.DATA_DIR}
 

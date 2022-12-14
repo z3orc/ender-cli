@@ -50,9 +50,11 @@ func init() {
 }
 
 func upgrade(){
+
 	current_version := config.Get(global.CONFIG_ENDER_PATH, "version")
+	current_build := config.Get(global.CONFIG_ENDER_PATH, "build")
 	flavour := config.Get(global.CONFIG_ENDER_PATH, "flavour")
-	choices := possible_versions(current_version, flavour, false)
+	choices := possibleVersions(current_version, current_build, flavour, false)
 
 	if len(choices) == 0 {
 		fmt.Println("🚀  You are already on the latest version!")
@@ -96,7 +98,7 @@ func upgrade(){
 	
 }
 
-func possible_versions(current_version string, flavour string, snapshot bool) []string{
+func possibleVersions(current_version string, current_build string, flavour string, snapshot bool) []string{
 	var possible_versions []string;
 
 	if flavour == "vanilla" {
@@ -122,6 +124,14 @@ func possible_versions(current_version string, flavour string, snapshot bool) []
 				break
 			}
 		}
+
+		if len(possible_versions) == 1 && possible_versions[0] == current_version {
+			latest_build := paper.GetLatestBuild(current_version)
+			if latest_build == current_build {
+				return []string{}
+			}
+		}
+
 	} else if flavour == "purpur" {
 		versions := purpur.GetVersions().Versions
 		for i, j := 0, len(versions)-1; i < j; i, j = i+1, j-1 {
@@ -132,6 +142,13 @@ func possible_versions(current_version string, flavour string, snapshot bool) []
 			possible_versions = append(possible_versions, versions[index])
 			if versions[index] == current_version {
 				break
+			}
+		}
+
+		if len(possible_versions) == 1 && possible_versions[0] == current_version {
+			latest_build := purpur.GetLatestBuild(current_version)
+			if latest_build == current_build {
+				return []string{}
 			}
 		}
 	}
