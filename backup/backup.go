@@ -10,7 +10,17 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mholt/archiver/v4"
+	"github.com/z3orc/ender-cli/logger"
 )
+
+func init() {
+	_, err := os.Stat("./testing/backups")
+	if err != nil {
+		if err = os.Mkdir("./testing/backups", 0644); err != nil {
+			logger.Error.Fatalln("could not create backup directory. " + err.Error())
+		}
+	}
+}
 
 type Backup struct {
 	ID          uuid.UUID
@@ -44,7 +54,7 @@ func New() (*Backup, error) {
 		return nil, fmt.Errorf("could not register new backup. %s", err)
 	}
 
-	err = removeOldBackups()
+	err = PurgeOldBackups()
 	if err != nil {
 		return nil, fmt.Errorf("could not remove old backups. %s", err)
 	}
@@ -99,19 +109,14 @@ func createArchive(source string, destination string) error {
 	return nil
 }
 
-func removeOldBackups() error {
+func PurgeOldBackups() error {
 	backups, err := ReadOverview()
 	if err != nil {
 		return err
 	}
 
-	backupFiles, err := ReadOverview()
-	if err != nil {
-		return err
-	}
-
 	currentTime := time.Now()
-	for _, v := range backupFiles {
+	for _, v := range backups {
 		backupTimestamp := time.Unix(v.Timestamp, 0)
 		diff := currentTime.Sub(backupTimestamp)
 		if diff.Hours()/24 > 60 {
@@ -122,6 +127,29 @@ func removeOldBackups() error {
 
 			delete(backups, v.ID.String())
 		}
+	}
+
+	err = WriteOverview(backups)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func PurgeBackups() error {
+	backups, err := ReadOverview()
+	if err != nil {
+		return err
+	}
+
+	for _, v := range backups {
+		err = os.RemoveAll(v.Destination)
+		if err != nil {
+			return fmt.Errorf("could not remove backup: %s", v.Destination)
+		}
+
+		delete(backups, v.ID.String())
 	}
 
 	err = WriteOverview(backups)

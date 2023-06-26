@@ -1,13 +1,13 @@
 package commands
 
 import (
-	"bufio"
 	"io"
 	"os"
 	"os/exec"
 	"os/signal"
-	"strings"
+	"time"
 
+	"github.com/z3orc/ender-cli/backup"
 	"github.com/z3orc/ender-cli/console"
 	"github.com/z3orc/ender-cli/logger"
 	cli "github.com/z3orc/simple-cli"
@@ -39,7 +39,6 @@ func start() {
 	javaExec.Dir = "./testing"
 	javaExec.Stdin = os.Stdin
 	// server.Stdout = os.Stdout
-	// server.Start()
 
 	server := console.New(javaExec)
 	server.Start()
@@ -59,35 +58,42 @@ func start() {
 		}
 	}()
 
-	scanner := bufio.NewScanner(os.Stdin)
-	go func() {
-		scanner.Scan()
-		input := scanner.Text()
-		input = strings.Trim(input, " ")
-
-		if input == "stop" {
-			server.Stop()
-			os.Exit(0)
-		} else if input != "" {
-			server.Write(input + "\n")
-		}
-
-	}()
-
-	backup := make(chan int)
 	// go func() {
-	// 	time.Sleep(60 * time.Second)
-	// 	backup <- 1
+	// 	scanner := bufio.NewScanner(os.Stdin)
+	// 	for {
+	// 		scanner.Scan()
+	// 		input := scanner.Text()
+
+	// 		if input == "stop" {
+	// 			server.Write("stop")
+	// 			server.Wait()
+	// 			os.Exit(0)
+	// 		} else {
+	// 			server.Write(input)
+	// 		}
+	// 	}
 	// }()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
+	backupSignal := make(chan int)
+	go func() {
+		time.Sleep(24 * time.Hour)
+		backupSignal <- 1
+	}()
+
+	quitSignal := make(chan os.Signal, 1)
+	signal.Notify(quitSignal, os.Interrupt)
 
 	select {
-	case <-quit:
+	case <-quitSignal:
 		server.Stop()
-	case <-backup:
+	case <-backupSignal:
 		server.Stop()
+		_, err := backup.New()
+		if err != nil {
+			logger.Error.Fatalln("could not create backup. " + err.Error())
+		} else {
+			logger.Info.Println("New backup created")
+		}
 		start()
 	}
 }
