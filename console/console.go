@@ -33,6 +33,7 @@ func New(cmd *exec.Cmd) *Console {
 
 func (c *Console) Write(line string) {
 	c.stdin.WriteString(fmt.Sprintf("%s\r\n", line))
+	c.stdin.Flush()
 }
 
 func (c *Console) Read() (string, error) {
@@ -49,4 +50,8 @@ func (c *Console) Stop() {
 	c.cmd.Process.Signal(os.Interrupt)
 	c.cmd.Wait()
 	logger.Info.Println("Server stopped")
+}
+
+func (c *Console) Wait() {
+	c.cmd.Wait()
 }
