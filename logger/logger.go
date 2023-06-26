@@ -19,5 +19,5 @@ func init() {
 
 	Info = log.New(os.Stdout, infoText("[info] "), log.Ltime)
 	Warn = log.New(os.Stdout, warnText("[warn] "), log.Ltime)
-	Error = log.New(os.Stderr, errorText("[error] "), log.Lshortfile)
+	Error = log.New(os.Stderr, errorText("[error] "), 0)
 }
