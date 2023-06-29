@@ -16,7 +16,7 @@ import (
 func init() {
 	_, err := os.Stat("./testing/backups")
 	if err != nil {
-		if err = os.Mkdir("./testing/backups", 0644); err != nil {
+		if err = os.Mkdir("./testing/backups", os.ModePerm); err != nil {
 			logger.Error.Fatalln("could not create backup directory. " + err.Error())
 		}
 	}

@@ -29,6 +29,7 @@ var Backup *cli.Command = &cli.Command{
 			}
 			return
 		}
+		logger.Info.Println("Creating new backup")
 		_, err := backup.New()
 		if err != nil {
 			logger.Error.Fatalln("could not create backup. " + err.Error())

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/z3orc/ender-cli/backup"
-	"github.com/z3orc/ender-cli/console"
 	"github.com/z3orc/ender-cli/logger"
+	wrapper "github.com/z3orc/ender-cli/wrapper"
 	cli "github.com/z3orc/simple-cli"
 )
 
@@ -28,7 +28,7 @@ var Start *cli.Command = &cli.Command{
 	},
 	Run: func(s [][]string) {
 		if len(s) > 0 && (s[0][0] == "--verbose" || s[0][0] == "-v") {
-			console.Verbose = true
+			wrapper.Verbose = true
 		}
 		start()
 	},
@@ -40,7 +40,7 @@ func start() {
 	javaExec.Stdin = os.Stdin
 	// server.Stdout = os.Stdout
 
-	server := console.New(javaExec)
+	server := wrapper.New(javaExec)
 	server.Start()
 
 	go func() {
@@ -54,7 +54,7 @@ func start() {
 				}
 			}
 
-			console.Parse(line)
+			wrapper.Parse(line)
 		}
 	}()
 
@@ -74,6 +74,12 @@ func start() {
 	// 	}
 	// }()
 
+	stoppedSignal := make(chan int)
+	go func() {
+		server.Wait()
+		stoppedSignal <- 1
+	}()
+
 	backupSignal := make(chan int)
 	go func() {
 		time.Sleep(24 * time.Hour)
@@ -84,6 +90,8 @@ func start() {
 	signal.Notify(quitSignal, os.Interrupt)
 
 	select {
+	case <-stoppedSignal:
+		server.Stop()
 	case <-quitSignal:
 		server.Stop()
 	case <-backupSignal:
