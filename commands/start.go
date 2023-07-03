@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -42,21 +41,7 @@ func start() {
 
 	server := wrapper.New(javaExec)
 	server.Start()
-
-	go func() {
-		for {
-			line, err := server.Read()
-			if err != nil {
-				if err == io.EOF {
-					return
-				} else {
-					logger.Error.Println("could not read console output")
-				}
-			}
-
-			wrapper.Parse(line)
-		}
-	}()
+	go server.ReadLogs()
 
 	// go func() {
 	// 	scanner := bufio.NewScanner(os.Stdin)
@@ -74,6 +59,9 @@ func start() {
 	// 	}
 	// }()
 
+	quitSignal := make(chan os.Signal, 1)
+	signal.Notify(quitSignal, os.Interrupt)
+
 	stoppedSignal := make(chan int)
 	go func() {
 		server.Wait()
@@ -82,16 +70,27 @@ func start() {
 
 	backupSignal := make(chan int)
 	go func() {
-		time.Sleep(24 * time.Hour)
+		time.Sleep(24 * time.Second)
 		backupSignal <- 1
 	}()
 
-	quitSignal := make(chan os.Signal, 1)
-	signal.Notify(quitSignal, os.Interrupt)
+	// go func() {
+	// 	for {
+	// 		line, err := server.Read()
+	// 		if err != nil {
+	// 			if err != io.EOF {
+	// 				logger.Error.Println("could not read console output")
+	// 			}
+	// 			return
+	// 		}
+
+	// 		wrapper.Parse(line)
+	// 	}
+	// }()
 
 	select {
 	case <-stoppedSignal:
-		server.Stop()
+		os.Exit(0)
 	case <-quitSignal:
 		server.Stop()
 	case <-backupSignal:
@@ -102,6 +101,15 @@ func start() {
 		} else {
 			logger.Info.Println("New backup created")
 		}
+
+		executable, err := os.Executable()
+		if err != nil {
+			logger.Error.Fatalln("could not find executable. " + err.Error())
+		}
+		new := exec.Command(executable, "start")
+		new.Stdin = os.Stdin
+		new.Stdout = os.Stdout
+
 		start()
 	}
 }

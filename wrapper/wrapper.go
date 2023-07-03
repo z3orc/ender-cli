@@ -3,6 +3,7 @@ package console
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 
@@ -12,9 +13,10 @@ import (
 var Verbose bool = false
 
 type Wrapper struct {
-	cmd    *exec.Cmd
-	stdin  *bufio.Writer
-	stdout *bufio.Reader
+	cmd     *exec.Cmd
+	stdin   *bufio.Writer
+	stdout  *bufio.Reader
+	Stopped chan int
 }
 
 func New(cmd *exec.Cmd) *Wrapper {
@@ -27,6 +29,8 @@ func New(cmd *exec.Cmd) *Wrapper {
 
 	stdin, _ := c.cmd.StdinPipe()
 	c.stdin = bufio.NewWriter(stdin)
+
+	c.Stopped = make(chan int)
 
 	return c
 }
@@ -43,15 +47,33 @@ func (c *Wrapper) Read() (string, error) {
 func (c *Wrapper) Start() {
 	logger.Info.Println("Starting server")
 	c.cmd.Start()
+	stoppedSignal := make(chan int)
+	go func() {
+		c.Wait()
+		stoppedSignal <- 1
+	}()
 }
 
 func (c *Wrapper) Stop() {
 	logger.Info.Println("Stopping server")
 	c.cmd.Process.Signal(os.Interrupt)
-	c.cmd.Wait()
+	c.Wait()
 	logger.Info.Println("Server stopped")
 }
 
 func (c *Wrapper) Wait() {
 	c.cmd.Wait()
+}
+
+func (c *Wrapper) ReadLogs() {
+	for {
+		line, err := c.Read()
+		if err != nil {
+			if err != io.EOF {
+				logger.Error.Println("could not read console output")
+			}
+			return
+		}
+		Parse(line)
+	}
 }
