@@ -37,27 +37,10 @@ func start() {
 	javaExec := exec.Command("java", "-jar", "server.jar", "nogui")
 	javaExec.Dir = "./testing"
 	javaExec.Stdin = os.Stdin
-	// server.Stdout = os.Stdout
 
 	server := wrapper.New(javaExec)
 	server.Start()
 	go server.ReadLogs()
-
-	// go func() {
-	// 	scanner := bufio.NewScanner(os.Stdin)
-	// 	for {
-	// 		scanner.Scan()
-	// 		input := scanner.Text()
-
-	// 		if input == "stop" {
-	// 			server.Write("stop")
-	// 			server.Wait()
-	// 			os.Exit(0)
-	// 		} else {
-	// 			server.Write(input)
-	// 		}
-	// 	}
-	// }()
 
 	quitSignal := make(chan os.Signal, 1)
 	signal.Notify(quitSignal, os.Interrupt)
@@ -73,20 +56,6 @@ func start() {
 		time.Sleep(24 * time.Second)
 		backupSignal <- 1
 	}()
-
-	// go func() {
-	// 	for {
-	// 		line, err := server.Read()
-	// 		if err != nil {
-	// 			if err != io.EOF {
-	// 				logger.Error.Println("could not read console output")
-	// 			}
-	// 			return
-	// 		}
-
-	// 		wrapper.Parse(line)
-	// 	}
-	// }()
 
 	select {
 	case <-stoppedSignal:
