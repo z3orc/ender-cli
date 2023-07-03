@@ -53,7 +53,7 @@ func start() {
 
 	backupSignal := make(chan int)
 	go func() {
-		time.Sleep(10 * time.Second)
+		time.Sleep(24 * time.Hour)
 		backupSignal <- 1
 	}()
 

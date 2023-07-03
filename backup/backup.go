@@ -133,7 +133,7 @@ func PurgeOldBackups() error {
 	for _, v := range backups {
 		backupTimestamp := time.Unix(v.Timestamp, 0)
 		diff := currentTime.Sub(backupTimestamp)
-		if diff.Hours()/24 > 60 || !v.Success {
+		if diff.Hours()/24 > 7 || !v.Success {
 			err = os.RemoveAll(v.Destination)
 			if err != nil {
 				return fmt.Errorf("could not remove backup: %s", v.Destination)
