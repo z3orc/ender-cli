@@ -53,7 +53,7 @@ func start() {
 
 	backupSignal := make(chan int)
 	go func() {
-		time.Sleep(24 * time.Second)
+		time.Sleep(10 * time.Second)
 		backupSignal <- 1
 	}()
 
@@ -66,18 +66,10 @@ func start() {
 		server.Stop()
 		_, err := backup.New()
 		if err != nil {
-			logger.Error.Fatalln("could not create backup. " + err.Error())
+			logger.Error.Fatalln(err.Error())
 		} else {
 			logger.Info.Println("New backup created")
 		}
-
-		executable, err := os.Executable()
-		if err != nil {
-			logger.Error.Fatalln("could not find executable. " + err.Error())
-		}
-		new := exec.Command(executable, "start")
-		new.Stdin = os.Stdin
-		new.Stdout = os.Stdout
 
 		start()
 	}
