@@ -26,15 +26,12 @@ type Backup struct {
 	ID          uuid.UUID
 	Destination string
 	Timestamp   int64
+	Success     bool
 }
 
 func New() (*Backup, error) {
 	currentTime := time.Now()
 	filename := currentTime.Format("2006-01-02_15-04-05")
-
-	if err := createArchive("./testing", "./testing/backups/"+filename); err != nil {
-		return nil, fmt.Errorf("could not create server backup. %s", err)
-	}
 
 	backup := &Backup{
 		ID:          uuid.New(),
@@ -47,19 +44,32 @@ func New() (*Backup, error) {
 		return nil, fmt.Errorf("could not register new backup. %s", err)
 	}
 
+	errArchive := ""
+	if err := createArchive("./testing", "./testing/backups/"+filename); err != nil {
+		backup.Success = false
+		errArchive = fmt.Sprintf("could not create server backup. %s. ", err)
+	} else {
+		backup.Success = true
+	}
+
 	backups[backup.ID.String()] = backup
 
 	err = WriteOverview(backups)
 	if err != nil {
-		return nil, fmt.Errorf("could not register new backup. %s", err)
+		return nil, fmt.Errorf("%scould not register new backup. %s", errArchive, err)
 	}
 
 	err = PurgeOldBackups()
 	if err != nil {
-		return nil, fmt.Errorf("could not remove old backups. %s", err)
+		return nil, fmt.Errorf("%scould not remove old backups. %s", errArchive, err)
 	}
 
-	return backup, nil
+	if errArchive == "" {
+		return backup, nil
+	} else {
+		return backup, fmt.Errorf(errArchive)
+	}
+
 }
 
 func createArchive(source string, destination string) error {
@@ -86,9 +96,13 @@ func createArchive(source string, destination string) error {
 		if err != nil {
 			return fmt.Errorf("failed to find path of file: %s. %s", file.Name(), err)
 		}
-		if !strings.Contains(file.Name(), "backup") {
-			fileMap[abs] = ""
+
+		//Cannot create archive if a file is being written to
+		if strings.HasSuffix(abs, "testing/backups") {
+			continue
 		}
+
+		fileMap[abs] = ""
 	}
 
 	fileForArchive, err := archiver.FilesFromDisk(nil, fileMap)
@@ -119,13 +133,15 @@ func PurgeOldBackups() error {
 	for _, v := range backups {
 		backupTimestamp := time.Unix(v.Timestamp, 0)
 		diff := currentTime.Sub(backupTimestamp)
-		if diff.Hours()/24 > 60 {
+		if diff.Hours()/24 > 60 || !v.Success {
 			err = os.RemoveAll(v.Destination)
 			if err != nil {
 				return fmt.Errorf("could not remove backup: %s", v.Destination)
 			}
 
 			delete(backups, v.ID.String())
+
+			logger.Info.Println("Removed backup: " + v.ID.String())
 		}
 	}
 
@@ -150,6 +166,8 @@ func PurgeBackups() error {
 		}
 
 		delete(backups, v.ID.String())
+
+		logger.Info.Println("Removed backup: " + v.ID.String())
 	}
 
 	err = WriteOverview(backups)
