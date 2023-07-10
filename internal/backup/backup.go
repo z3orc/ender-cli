@@ -10,13 +10,16 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mholt/archiver/v4"
-	"github.com/z3orc/ender-cli/logger"
+	"github.com/z3orc/ender-cli/internal/global"
+	"github.com/z3orc/ender-cli/internal/logger"
 )
 
+const BACKUP_DIR = global.WORK_DIR + "/backups"
+
 func init() {
-	_, err := os.Stat("./testing/backups")
+	_, err := os.Stat(BACKUP_DIR)
 	if err != nil {
-		if err = os.Mkdir("./testing/backups", os.ModePerm); err != nil {
+		if err = os.Mkdir(BACKUP_DIR, os.ModePerm); err != nil {
 			logger.Error.Fatalln("could not create backup directory. " + err.Error())
 		}
 	}
@@ -35,7 +38,7 @@ func New() (*Backup, error) {
 
 	backup := &Backup{
 		ID:          uuid.New(),
-		Destination: "./testing/backups/" + filename + ".tar.gz",
+		Destination: BACKUP_DIR + "/" + filename + ".tar.gz",
 		Timestamp:   currentTime.Unix(),
 	}
 
@@ -45,7 +48,7 @@ func New() (*Backup, error) {
 	}
 
 	errArchive := ""
-	if err := createArchive("./testing", "./testing/backups/"+filename); err != nil {
+	if err := createArchive(global.WORK_DIR, BACKUP_DIR+"/"+filename); err != nil {
 		backup.Success = false
 		errArchive = fmt.Sprintf("could not create server backup. %s. ", err)
 	} else {
@@ -92,7 +95,7 @@ func createArchive(source string, destination string) error {
 
 	fileMap := make(map[string]string)
 	for _, file := range files {
-		abs, err := filepath.Abs("./testing/" + file.Name())
+		abs, err := filepath.Abs(global.WORK_DIR + "/" + file.Name())
 		if err != nil {
 			return fmt.Errorf("failed to find path of file: %s. %s", file.Name(), err)
 		}

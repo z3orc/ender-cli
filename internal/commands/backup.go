@@ -1,8 +1,8 @@
 package commands
 
 import (
-	"github.com/z3orc/ender-cli/backup"
-	"github.com/z3orc/ender-cli/logger"
+	"github.com/z3orc/ender-cli/internal/backup"
+	"github.com/z3orc/ender-cli/internal/logger"
 	cli "github.com/z3orc/simple-cli"
 )
 

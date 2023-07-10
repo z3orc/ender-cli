@@ -1,11 +1,11 @@
-package console
+package wrapper
 
 import (
 	"fmt"
 	"regexp"
 
 	"github.com/fatih/color"
-	"github.com/z3orc/ender-cli/logger"
+	"github.com/z3orc/ender-cli/internal/logger"
 )
 
 const (

@@ -6,9 +6,10 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/z3orc/ender-cli/backup"
-	"github.com/z3orc/ender-cli/logger"
-	wrapper "github.com/z3orc/ender-cli/wrapper"
+	"github.com/z3orc/ender-cli/internal/backup"
+	"github.com/z3orc/ender-cli/internal/global"
+	"github.com/z3orc/ender-cli/internal/logger"
+	"github.com/z3orc/ender-cli/internal/wrapper"
 	cli "github.com/z3orc/simple-cli"
 )
 
@@ -35,7 +36,7 @@ var Start *cli.Command = &cli.Command{
 
 func start() {
 	javaExec := exec.Command("java", "-jar", "server.jar", "nogui")
-	javaExec.Dir = "./testing"
+	javaExec.Dir = global.WORK_DIR
 	javaExec.Stdin = os.Stdin
 
 	server := wrapper.New(javaExec)

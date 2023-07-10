@@ -9,22 +9,25 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/z3orc/ender-cli/logger"
+	"github.com/z3orc/ender-cli/internal/global"
+	"github.com/z3orc/ender-cli/internal/logger"
 	"gopkg.in/yaml.v3"
 )
 
 var p *ServerProperties
+var PATH = global.WORK_DIR + "/server.properties"
 
 type ParseError struct {
 	key string
 }
 
 func init() {
-	properties, err := New("./testing/server.properties")
+	properties, err := New(PATH)
 	if err != nil {
 		logger.Error.Fatalln(err)
 	}
 	p = properties
+
 }
 
 func (e *ParseError) Error() string {

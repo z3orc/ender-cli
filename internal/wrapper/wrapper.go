@@ -1,4 +1,4 @@
-package console
+package wrapper
 
 import (
 	"bufio"
@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/z3orc/ender-cli/logger"
+	"github.com/z3orc/ender-cli/internal/logger"
 )
 
 var Verbose bool = false
